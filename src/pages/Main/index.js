@@ -21,13 +21,23 @@ export default class Main extends Component {
     try {
       const { data: repository } = await api.get(`/repos/${this.state.repositoryInput}`);
 
-      repository.lastCommit = moment(repository.pushed_at).fromNow();
+      // Check if Repository already exists, don't add again.
+      const alreadyExists = this.state.repositories.some(repo => repo.id === repository.id);
 
-      this.setState(state => ({
-        repositoryError: false,
-        repositoryInput: '',
-        repositories: [...state.repositories, repository],
-      }));
+      if (alreadyExists) {
+        this.setState(state => ({
+          repositoryError: false,
+          repositoryInput: '',
+        }));
+      } else {
+        repository.lastCommit = moment(repository.pushed_at).fromNow();
+
+        this.setState(state => ({
+          repositoryError: false,
+          repositoryInput: '',
+          repositories: [...state.repositories, repository],
+        }));
+      }
     } catch (error) {
       this.setState({ repositoryError: true });
     } finally {
